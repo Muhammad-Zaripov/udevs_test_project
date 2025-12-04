@@ -8,13 +8,14 @@ class CenterAnimation extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: AnimatedContainer(
-        duration: Duration(milliseconds: 100),
+        duration: Duration(milliseconds: 150),
         transform: Matrix4.translationValues(0, pinOffset, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
+              padding: EdgeInsets.all(3),
               width: 35,
               height: 35,
               decoration: BoxDecoration(
@@ -22,6 +23,12 @@ class CenterAnimation extends StatelessWidget {
                 color: Colors.amber,
                 borderRadius: BorderRadius.circular(9),
               ),
+              child: pinOffset < 0
+                  ? CircularProgressIndicator(
+                      color: Colors.black,
+                      strokeWidth: 3,
+                    )
+                  : Icon(Icons.person, color: Colors.black),
             ),
             Container(
               width: 3,
