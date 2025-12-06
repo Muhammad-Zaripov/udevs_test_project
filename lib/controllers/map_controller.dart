@@ -28,7 +28,12 @@ class MapController {
       latitude: position.latitude,
       longitude: position.longitude,
     );
-
+    mapController!.moveCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(target: userLocation!, zoom: 15.0),
+      ),
+      animation: MapAnimation(type: MapAnimationType.smooth, duration: 1.0),
+    );
     setState();
   }
 
@@ -41,8 +46,21 @@ class MapController {
         ),
         animation: MapAnimation(type: MapAnimationType.smooth, duration: 1.0),
       );
+      mapModel.addMapObjects(
+        PlacemarkMapObject(
+          mapId: MapObjectId('user_location'),
+          point: userLocation!,
+          icon: PlacemarkIcon.single(
+            PlacemarkIconStyle(
+              image: BitmapDescriptor.fromAssetImage(
+                'assets/icons/pin.png',
+              ), // Rasmingiz
+              scale: 0.1,
+            ),
+          ),
+        ),
+      );
     }
-    await mapController!.toggleUserLayer(visible: true);
     setState();
   }
 
@@ -115,12 +133,6 @@ class MapController {
   }
 
   Future<void> searchLocation(String location) async {
-    if (location.isEmpty) {
-      mapModel.searchResult = [];
-      setState();
-      return;
-    }
-
     var (session, resultFuture) = await YandexSearch.searchByText(
       searchText: location,
       geometry: Geometry.fromPoint(userLocation!),
@@ -152,11 +164,7 @@ class MapController {
   }
 
   Future<void> drawToSelected() async {
-    if (selectedLocation == null) {
-      return;
-    }
-
-    if (userLocation == null) {
+    if (selectedLocation == null || userLocation == null) {
       return;
     }
     if (userLocation == selectedLocation) {
