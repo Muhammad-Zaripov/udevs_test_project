@@ -12,15 +12,18 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final MapModel model = MapModel();
-  late MapController controller;
+  final MapModel mapModel = MapModel();
+  late MapController mapController;
   final searchController = TextEditingController();
 
   @override
   void initState() {
+    mapController = MapController(
+      setState: () => setState(() {}),
+      mapModel: mapModel,
+    );
     super.initState();
-    controller = MapController(model: model, setState: () => setState(() {}));
-    controller.getUserLocation();
+    mapController.getUserLocation();
   }
 
   @override
@@ -29,13 +32,11 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Stack(
         children: [
           YandexMap(
-            mapObjects: model.mapObjects,
-            nightModeEnabled: true,
-            onCameraPositionChanged: controller.onCameraPositionChanged,
-            onMapCreated: controller.onMapCreated,
+            mapObjects: mapModel.mapObjects,
+            onMapCreated: mapController.onMapCreated,
+            onCameraPositionChanged: mapController.onCameraPositionChanged,
           ),
-
-          // Search TextField va natijalar
+          CenterAnimation(pinOffset: mapModel.pinOffset),
           Positioned(
             top: 60,
             left: 16,
@@ -45,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 TextField(
                   controller: searchController,
                   onChanged: (value) {
-                    controller.searchLocation(value);
+                    mapController.searchLocation(value);
                   },
                   decoration: InputDecoration(
                     filled: true,
@@ -58,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             icon: Icon(Icons.clear, color: Colors.black),
                             onPressed: () {
                               searchController.clear();
-                              model.searchResults = [];
+                              mapModel.searchResult = [];
                               setState(() {});
                             },
                           )
@@ -70,28 +71,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // Qidiruv natijalari ro'yxati
-                if (model.searchResults.isNotEmpty)
+                if (mapModel.searchResult.isNotEmpty)
                   Container(
                     margin: EdgeInsets.only(top: 8),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
                     ),
                     constraints: BoxConstraints(maxHeight: 300),
                     child: ListView.builder(
                       shrinkWrap: true,
                       padding: EdgeInsets.zero,
-                      itemCount: model.searchResults.length,
+                      itemCount: mapModel.searchResult.length,
                       itemBuilder: (context, index) {
-                        final item = model.searchResults[index];
+                        final item = mapModel.searchResult[index];
                         return ListTile(
                           title: Text(
                             item.name,
@@ -113,7 +106,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               : null,
                           onTap: () {
                             searchController.text = item.name;
-                            controller.selectLocation(item);
+                            mapController.onLocationTapped(index);
+                            mapController.drawToSelected();
                           },
                         );
                       },
@@ -122,38 +116,30 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-
-          CenterAnimation(pinOffset: model.pinOffset),
         ],
       ),
       floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton(
             backgroundColor: Colors.white,
             onPressed: () {
-              controller.moveToUserLocation();
               searchController.clear();
+              mapController.moveToUserLocation();
             },
-            child: const Icon(Icons.my_location, color: Colors.black),
+            child: Icon(Icons.add, color: Colors.black),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 10),
           FloatingActionButton(
             backgroundColor: Colors.white,
             onPressed: () {
-              controller.drawRoute();
               searchController.clear();
+              mapController.drawRouteToCameraPosition();
             },
-            child: const Icon(Icons.route, color: Colors.black),
+            child: Icon(Icons.route, color: Colors.black),
           ),
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    searchController.dispose();
-    super.dispose();
   }
 }

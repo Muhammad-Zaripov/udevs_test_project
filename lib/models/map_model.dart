@@ -1,16 +1,16 @@
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 
 class MapModel {
-  List<MapObject> mapObjects = [];
-  List<SearchItem> searchResults = [];
   double pinOffset = 0;
   bool drawRoute = false;
+  List<MapObject> mapObjects = [];
+  List<SearchItem> searchResult = [];
 
-  void addMapObject(MapObject object) {
-    mapObjects.add(object);
+  void addMapObjects(MapObject mapObject) {
+    mapObjects.add(mapObject);
   }
 
-  void removeMapObjectById(String id) {
+  void removeMapObjectsById(String id) {
     mapObjects.removeWhere((e) => e.mapId.value == id);
   }
 }
